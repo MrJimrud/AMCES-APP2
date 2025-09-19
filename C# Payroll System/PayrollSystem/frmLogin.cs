@@ -10,6 +10,7 @@ namespace PayrollSystem
     {
         public frmLogin()
         {
+            //Initialized
             InitializeComponent();
             this.Load += FrmLogin_Load;
         }
