@@ -374,6 +374,7 @@ namespace PayrollSystem
             var totalGenerations = data.Rows.Count;
             var totalEmployees = data.AsEnumerable().Sum(row => 
             {
+//wew
                 // Handle different possible types for TotalEmployees
                 if (row["TotalEmployees"] == DBNull.Value) return 0;
                 if (row["TotalEmployees"] is long longVal) return (int)longVal;
