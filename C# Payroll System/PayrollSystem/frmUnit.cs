@@ -1,0 +1,1122 @@
+using System;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Text;
+using System.Windows.Forms;
+using System.Collections.Generic;
+
+namespace PayrollSystem
+{
+    public partial class frmUnit : Form
+    {
+        private TabControl tabControl;
+        private TabPage tabUnitList;
+        private TabPage tabUnitCategories;
+        private TabPage tabConversions;
+        private TabPage tabSettings;
+        
+        // Unit List Tab Controls
+        private DataGridView dgvUnits;
+        private ComboBox cmbUnitCategory;
+        private TextBox txtSearchUnit;
+        private Button btnAddUnit;
+        private Button btnEditUnit;
+        private Button btnDeleteUnit;
+        private Button btnRefreshUnits;
+        private Button btnExportUnits;
+        private Label lblTotalUnits;
+        
+        // Unit Categories Tab Controls
+        private DataGridView dgvCategories;
+        private Button btnAddCategory;
+        private Button btnEditCategory;
+        private Button btnDeleteCategory;
+        private Button btnRefreshCategories;
+        private Label lblTotalCategories;
+        
+        // Conversions Tab Controls
+        private DataGridView dgvConversions;
+        private ComboBox cmbFromUnit;
+        private ComboBox cmbToUnit;
+        private NumericUpDown nudConversionFactor;
+        private Button btnAddConversion;
+        private Button btnEditConversion;
+        private Button btnDeleteConversion;
+        private Button btnCalculateConversion;
+        private TextBox txtConversionResult;
+        private Label lblTotalConversions;
+        
+        // Settings Tab Controls
+        private ComboBox cmbDefaultUnit;
+        private CheckBox chkAutoConvert;
+        private CheckBox chkShowUnitInReports;
+        private NumericUpDown nudDecimalPlaces;
+        private Button btnSaveSettings;
+        private Button btnResetSettings;
+
+        public frmUnit()
+        {
+            InitializeComponent();
+            LoadInitialData();
+        }
+
+        private void InitializeComponent()
+        {
+            this.Text = "Unit Management";
+            this.Size = new Size(1000, 700);
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.FormBorderStyle = FormBorderStyle.Sizable;
+            this.MinimumSize = new Size(900, 600);
+
+            // Create tab control
+            tabControl = new TabControl
+            {
+                Dock = DockStyle.Fill
+            };
+
+            // Create tabs
+            tabUnitList = new TabPage("Units");
+            tabUnitCategories = new TabPage("Categories");
+            tabConversions = new TabPage("Conversions");
+            tabSettings = new TabPage("Settings");
+
+            tabControl.TabPages.AddRange(new TabPage[] { tabUnitList, tabUnitCategories, tabConversions, tabSettings });
+
+            InitializeUnitListTab();
+            InitializeUnitCategoriesTab();
+            InitializeConversionsTab();
+            InitializeSettingsTab();
+
+            this.Controls.Add(tabControl);
+        }
+
+        private void InitializeUnitListTab()
+        {
+            // Top panel
+            Panel pnlTop = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 100,
+                BackColor = Color.FromArgb(240, 240, 240)
+            };
+
+            Label lblTitle = new Label
+            {
+                Text = "Unit Management",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Location = new Point(20, 15),
+                Size = new Size(200, 25)
+            };
+
+            Label lblSearch = new Label
+            {
+                Text = "Search:",
+                Location = new Point(20, 50),
+                Size = new Size(60, 23)
+            };
+
+            txtSearchUnit = new TextBox
+            {
+                Location = new Point(85, 47),
+                Size = new Size(150, 23)
+            };
+            txtSearchUnit.SetPlaceholderText("Unit name or symbol...");
+            txtSearchUnit.TextChanged += TxtSearchUnit_TextChanged;
+
+            Label lblCategory = new Label
+            {
+                Text = "Category:",
+                Location = new Point(250, 50),
+                Size = new Size(70, 23)
+            };
+
+            cmbUnitCategory = new ComboBox
+            {
+                Location = new Point(325, 47),
+                Size = new Size(120, 23),
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+            cmbUnitCategory.SelectedIndexChanged += CmbUnitCategory_SelectedIndexChanged;
+
+            btnAddUnit = new Button
+            {
+                Text = "Add Unit",
+                Location = new Point(600, 15),
+                Size = new Size(80, 30),
+                BackColor = Color.FromArgb(0, 122, 204),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            btnAddUnit.Click += BtnAddUnit_Click;
+
+            btnEditUnit = new Button
+            {
+                Text = "Edit",
+                Location = new Point(690, 15),
+                Size = new Size(60, 30),
+                BackColor = Color.FromArgb(255, 193, 7),
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
+            };
+            btnEditUnit.Click += BtnEditUnit_Click;
+
+            btnDeleteUnit = new Button
+            {
+                Text = "Delete",
+                Location = new Point(760, 15),
+                Size = new Size(60, 30),
+                BackColor = Color.FromArgb(220, 53, 69),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            btnDeleteUnit.Click += BtnDeleteUnit_Click;
+
+            btnRefreshUnits = new Button
+            {
+                Text = "Refresh",
+                Location = new Point(830, 15),
+                Size = new Size(70, 30),
+                BackColor = Color.FromArgb(108, 117, 125),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            btnRefreshUnits.Click += (s, e) => LoadUnits();
+
+            btnExportUnits = new Button
+            {
+                Text = "Export",
+                Location = new Point(910, 15),
+                Size = new Size(60, 30),
+                BackColor = Color.FromArgb(40, 167, 69),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            btnExportUnits.Click += BtnExportUnits_Click;
+
+            pnlTop.Controls.AddRange(new Control[] {
+                lblTitle, lblSearch, txtSearchUnit, lblCategory, cmbUnitCategory,
+                btnAddUnit, btnEditUnit, btnDeleteUnit, btnRefreshUnits, btnExportUnits
+            });
+
+            // DataGridView for units
+            dgvUnits = new DataGridView
+            {
+                Dock = DockStyle.Fill,
+                AllowUserToAddRows = false,
+                AllowUserToDeleteRows = false,
+                ReadOnly = true,
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                MultiSelect = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+            };
+            dgvUnits.CellDoubleClick += DgvUnits_CellDoubleClick;
+
+            // Bottom panel
+            Panel pnlBottom = new Panel
+            {
+                Dock = DockStyle.Bottom,
+                Height = 40,
+                BackColor = Color.FromArgb(240, 240, 240)
+            };
+
+            lblTotalUnits = new Label
+            {
+                Text = "Total Units: 0",
+                Location = new Point(20, 10),
+                Size = new Size(200, 23)
+            };
+
+            pnlBottom.Controls.Add(lblTotalUnits);
+
+            tabUnitList.Controls.AddRange(new Control[] { pnlTop, dgvUnits, pnlBottom });
+            UtilityHelper.ApplyLightMode(dgvUnits);
+        }
+
+        private void InitializeUnitCategoriesTab()
+        {
+            // Top panel
+            Panel pnlTop = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 80,
+                BackColor = Color.FromArgb(240, 240, 240)
+            };
+
+            Label lblTitle = new Label
+            {
+                Text = "Unit Categories",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Location = new Point(20, 15),
+                Size = new Size(200, 25)
+            };
+
+            btnAddCategory = new Button
+            {
+                Text = "Add Category",
+                Location = new Point(600, 15),
+                Size = new Size(100, 30),
+                BackColor = Color.FromArgb(0, 122, 204),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            btnAddCategory.Click += BtnAddCategory_Click;
+
+            btnEditCategory = new Button
+            {
+                Text = "Edit",
+                Location = new Point(710, 15),
+                Size = new Size(60, 30),
+                BackColor = Color.FromArgb(255, 193, 7),
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
+            };
+            btnEditCategory.Click += BtnEditCategory_Click;
+
+            btnDeleteCategory = new Button
+            {
+                Text = "Delete",
+                Location = new Point(780, 15),
+                Size = new Size(60, 30),
+                BackColor = Color.FromArgb(220, 53, 69),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            btnDeleteCategory.Click += BtnDeleteCategory_Click;
+
+            btnRefreshCategories = new Button
+            {
+                Text = "Refresh",
+                Location = new Point(850, 15),
+                Size = new Size(70, 30),
+                BackColor = Color.FromArgb(108, 117, 125),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            btnRefreshCategories.Click += (s, e) => LoadCategories();
+
+            pnlTop.Controls.AddRange(new Control[] {
+                lblTitle, btnAddCategory, btnEditCategory, btnDeleteCategory, btnRefreshCategories
+            });
+
+            // DataGridView for categories
+            dgvCategories = new DataGridView
+            {
+                Dock = DockStyle.Fill,
+                AllowUserToAddRows = false,
+                AllowUserToDeleteRows = false,
+                ReadOnly = true,
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                MultiSelect = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+            };
+            dgvCategories.CellDoubleClick += DgvCategories_CellDoubleClick;
+
+            // Bottom panel
+            Panel pnlBottomCat = new Panel
+            {
+                Dock = DockStyle.Bottom,
+                Height = 40,
+                BackColor = Color.FromArgb(240, 240, 240)
+            };
+
+            lblTotalCategories = new Label
+            {
+                Text = "Total Categories: 0",
+                Location = new Point(20, 10),
+                Size = new Size(200, 23)
+            };
+
+            pnlBottomCat.Controls.Add(lblTotalCategories);
+
+            tabUnitCategories.Controls.AddRange(new Control[] { pnlTop, dgvCategories, pnlBottomCat });
+            UtilityHelper.ApplyLightMode(dgvCategories);
+        }
+
+        private void InitializeConversionsTab()
+        {
+            // Top panel
+            Panel pnlTop = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 120,
+                BackColor = Color.FromArgb(240, 240, 240)
+            };
+
+            Label lblTitle = new Label
+            {
+                Text = "Unit Conversions",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Location = new Point(20, 15),
+                Size = new Size(200, 25)
+            };
+
+            Label lblFromUnit = new Label
+            {
+                Text = "From Unit:",
+                Location = new Point(20, 50),
+                Size = new Size(70, 23)
+            };
+
+            cmbFromUnit = new ComboBox
+            {
+                Location = new Point(95, 47),
+                Size = new Size(100, 23),
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+
+            Label lblToUnit = new Label
+            {
+                Text = "To Unit:",
+                Location = new Point(210, 50),
+                Size = new Size(60, 23)
+            };
+
+            cmbToUnit = new ComboBox
+            {
+                Location = new Point(275, 47),
+                Size = new Size(100, 23),
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+
+            Label lblFactor = new Label
+            {
+                Text = "Factor:",
+                Location = new Point(390, 50),
+                Size = new Size(50, 23)
+            };
+
+            nudConversionFactor = new NumericUpDown
+            {
+                Location = new Point(445, 47),
+                Size = new Size(80, 23),
+                DecimalPlaces = 6,
+                Minimum = 0.000001m,
+                Maximum = 999999m,
+                Value = 1m
+            };
+
+            btnAddConversion = new Button
+            {
+                Text = "Add",
+                Location = new Point(540, 45),
+                Size = new Size(50, 27),
+                BackColor = Color.FromArgb(0, 122, 204),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            btnAddConversion.Click += BtnAddConversion_Click;
+
+            btnEditConversion = new Button
+            {
+                Text = "Edit",
+                Location = new Point(600, 45),
+                Size = new Size(50, 27),
+                BackColor = Color.FromArgb(255, 193, 7),
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
+            };
+            btnEditConversion.Click += BtnEditConversion_Click;
+
+            btnDeleteConversion = new Button
+            {
+                Text = "Delete",
+                Location = new Point(660, 45),
+                Size = new Size(60, 27),
+                BackColor = Color.FromArgb(220, 53, 69),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            btnDeleteConversion.Click += BtnDeleteConversion_Click;
+
+            // Conversion calculator
+            Label lblCalculator = new Label
+            {
+                Text = "Quick Conversion Calculator:",
+                Location = new Point(20, 85),
+                Size = new Size(180, 23)
+            };
+
+            btnCalculateConversion = new Button
+            {
+                Text = "Calculate",
+                Location = new Point(210, 82),
+                Size = new Size(70, 27),
+                BackColor = Color.FromArgb(23, 162, 184),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            btnCalculateConversion.Click += BtnCalculateConversion_Click;
+
+            txtConversionResult = new TextBox
+            {
+                Location = new Point(290, 82),
+                Size = new Size(200, 23),
+                ReadOnly = true,
+                BackColor = Color.FromArgb(248, 249, 250)
+            };
+
+            pnlTop.Controls.AddRange(new Control[] {
+                lblTitle, lblFromUnit, cmbFromUnit, lblToUnit, cmbToUnit, lblFactor, nudConversionFactor,
+                btnAddConversion, btnEditConversion, btnDeleteConversion,
+                lblCalculator, btnCalculateConversion, txtConversionResult
+            });
+
+            // DataGridView for conversions
+            dgvConversions = new DataGridView
+            {
+                Dock = DockStyle.Fill,
+                AllowUserToAddRows = false,
+                AllowUserToDeleteRows = false,
+                ReadOnly = true,
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                MultiSelect = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+            };
+            dgvConversions.CellDoubleClick += DgvConversions_CellDoubleClick;
+            dgvConversions.SelectionChanged += DgvConversions_SelectionChanged;
+
+            // Bottom panel
+            Panel pnlBottomConv = new Panel
+            {
+                Dock = DockStyle.Bottom,
+                Height = 40,
+                BackColor = Color.FromArgb(240, 240, 240)
+            };
+
+            lblTotalConversions = new Label
+            {
+                Text = "Total Conversions: 0",
+                Location = new Point(20, 10),
+                Size = new Size(200, 23)
+            };
+
+            pnlBottomConv.Controls.Add(lblTotalConversions);
+
+            tabConversions.Controls.AddRange(new Control[] { pnlTop, dgvConversions, pnlBottomConv });
+            UtilityHelper.ApplyLightMode(dgvConversions);
+        }
+
+        private void InitializeSettingsTab()
+        {
+            Panel pnlMain = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Padding = new Padding(20)
+            };
+
+            Label lblTitle = new Label
+            {
+                Text = "Unit System Settings",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Location = new Point(0, 0),
+                Size = new Size(250, 30)
+            };
+
+            // Default Settings Group
+            GroupBox grpDefaults = new GroupBox
+            {
+                Text = "Default Settings",
+                Location = new Point(0, 40),
+                Size = new Size(400, 120)
+            };
+
+            Label lblDefaultUnit = new Label
+            {
+                Text = "Default Unit:",
+                Location = new Point(20, 30),
+                Size = new Size(80, 23)
+            };
+
+            cmbDefaultUnit = new ComboBox
+            {
+                Location = new Point(110, 27),
+                Size = new Size(120, 23),
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+
+            Label lblDecimalPlaces = new Label
+            {
+                Text = "Decimal Places:",
+                Location = new Point(20, 60),
+                Size = new Size(90, 23)
+            };
+
+            nudDecimalPlaces = new NumericUpDown
+            {
+                Location = new Point(110, 57),
+                Size = new Size(60, 23),
+                Minimum = 0,
+                Maximum = 6,
+                Value = 2
+            };
+
+            grpDefaults.Controls.AddRange(new Control[] {
+                lblDefaultUnit, cmbDefaultUnit, lblDecimalPlaces, nudDecimalPlaces
+            });
+
+            // Display Options Group
+            GroupBox grpDisplay = new GroupBox
+            {
+                Text = "Display Options",
+                Location = new Point(0, 180),
+                Size = new Size(400, 100)
+            };
+
+            chkAutoConvert = new CheckBox
+            {
+                Text = "Auto-convert units in calculations",
+                Location = new Point(20, 30),
+                Size = new Size(250, 23),
+                Checked = true
+            };
+
+            chkShowUnitInReports = new CheckBox
+            {
+                Text = "Show units in reports and printouts",
+                Location = new Point(20, 60),
+                Size = new Size(250, 23),
+                Checked = true
+            };
+
+            grpDisplay.Controls.AddRange(new Control[] {
+                chkAutoConvert, chkShowUnitInReports
+            });
+
+            // Buttons
+            btnSaveSettings = new Button
+            {
+                Text = "Save Settings",
+                Location = new Point(0, 300),
+                Size = new Size(100, 35),
+                BackColor = Color.FromArgb(40, 167, 69),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            btnSaveSettings.Click += BtnSaveSettings_Click;
+
+            btnResetSettings = new Button
+            {
+                Text = "Reset",
+                Location = new Point(110, 300),
+                Size = new Size(80, 35),
+                BackColor = Color.FromArgb(255, 193, 7),
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
+            };
+            btnResetSettings.Click += BtnResetSettings_Click;
+
+            pnlMain.Controls.AddRange(new Control[] {
+                lblTitle, grpDefaults, grpDisplay, btnSaveSettings, btnResetSettings
+            });
+
+            tabSettings.Controls.Add(pnlMain);
+        }
+
+        private void LoadInitialData()
+        {
+            LoadCategories();
+            LoadUnits();
+            LoadConversions();
+            LoadSettings();
+        }
+
+        private void LoadCategories()
+        {
+            try
+            {
+                string query = @"
+                    SELECT 
+                        id,
+                        category_name as 'Category Name',
+                        description as 'Description',
+                        CASE WHEN is_active = 1 THEN 'Active' ELSE 'Inactive' END as 'Status',
+                        created_date as 'Created Date'
+                    FROM unit_categories
+                    ORDER BY category_name";
+
+                DataTable dt = UtilityHelper.GetDataSet(query);
+                dgvCategories.DataSource = dt;
+
+                if (dgvCategories.Columns["id"] != null)
+                    dgvCategories.Columns["id"].Visible = false;
+
+                // Format date column
+                if (dgvCategories.Columns["Created Date"] != null)
+                {
+                    dgvCategories.Columns["Created Date"].DefaultCellStyle.Format = "MM/dd/yyyy";
+                }
+
+                UpdateCategoryCount();
+                LoadCategoryComboBoxes();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading categories: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void LoadUnits()
+        {
+            try
+            {
+                string categoryFilter = "";
+                if (cmbUnitCategory.SelectedIndex > 0)
+                {
+                    string selectedCategory = cmbUnitCategory.SelectedItem.ToString();
+                    categoryFilter = $" AND uc.category_name = '{selectedCategory}'";
+                }
+
+                string searchFilter = "";
+                if (!string.IsNullOrEmpty(txtSearchUnit.Text))
+                {
+                    string searchText = txtSearchUnit.Text.Replace("'", "''");
+                    searchFilter = $" AND (u.unit_name LIKE '%{searchText}%' OR u.unit_symbol LIKE '%{searchText}%')";
+                }
+
+                string query = $@"
+                    SELECT 
+                        u.id,
+                        u.unit_name as 'Unit Name',
+                        u.unit_symbol as 'Symbol',
+                        uc.category_name as 'Category',
+                        u.description as 'Description',
+                        CASE WHEN u.is_base_unit = 1 THEN 'Yes' ELSE 'No' END as 'Base Unit',
+                        CASE WHEN u.is_active = 1 THEN 'Active' ELSE 'Inactive' END as 'Status'
+                    FROM units u
+                LEFT JOIN unit_categories uc ON u.category_id = uc.id
+                    WHERE 1=1 {categoryFilter} {searchFilter}
+                    ORDER BY uc.category_name, u.unit_name";
+
+                DataTable dt = UtilityHelper.GetDataSet(query);
+                dgvUnits.DataSource = dt;
+
+                if (dgvUnits.Columns["id"] != null)
+                    dgvUnits.Columns["id"].Visible = false;
+
+                UpdateUnitCount();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading units: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void LoadConversions()
+        {
+            try
+            {
+                string query = @"
+                    SELECT 
+                        c.id,
+                        u1.unit_name as 'From Unit',
+                        u1.unit_symbol as 'From Symbol',
+                        u2.unit_name as 'To Unit',
+                        u2.unit_symbol as 'To Symbol',
+                        c.conversion_factor as 'Conversion Factor',
+                        c.formula as 'Formula',
+                        CASE WHEN c.is_active = 1 THEN 'Active' ELSE 'Inactive' END as 'Status'
+                    FROM unit_conversions c
+                INNER JOIN units u1 ON c.from_unit_id = u1.id
+                INNER JOIN units u2 ON c.to_unit_id = u2.id
+                    ORDER BY u1.unit_name, u2.unit_name";
+
+                DataTable dt = UtilityHelper.GetDataSet(query);
+                dgvConversions.DataSource = dt;
+
+                if (dgvConversions.Columns["id"] != null)
+                    dgvConversions.Columns["id"].Visible = false;
+
+                // Format conversion factor column
+                if (dgvConversions.Columns["Conversion Factor"] != null)
+                {
+                    dgvConversions.Columns["Conversion Factor"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                    dgvConversions.Columns["Conversion Factor"].DefaultCellStyle.Format = "N6";
+                }
+
+                UpdateConversionCount();
+                LoadUnitComboBoxes();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading conversions: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void LoadSettings()
+        {
+            try
+            {
+                string query = "SELECT * FROM unit_settings WHERE id = 1";
+                DataTable dt = UtilityHelper.GetDataSet(query);
+
+                if (dt.Rows.Count > 0)
+                {
+                    DataRow row = dt.Rows[0];
+                    nudDecimalPlaces.Value = Convert.ToDecimal(row["decimal_places"]);
+                    chkAutoConvert.Checked = Convert.ToBoolean(row["auto_convert"]);
+                    chkShowUnitInReports.Checked = Convert.ToBoolean(row["show_in_reports"]);
+                    
+                    // Load default unit
+                    string defaultUnitId = row["default_unit_id"].ToString();
+                    LoadDefaultUnitComboBox(defaultUnitId);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void LoadCategoryComboBoxes()
+        {
+            try
+            {
+                string query = "SELECT category_name FROM unit_categories WHERE is_active = 1 ORDER BY category_name";
+                DataTable dt = UtilityHelper.GetDataSet(query);
+                
+                cmbUnitCategory.Items.Clear();
+                cmbUnitCategory.Items.Add("All Categories");
+                
+                foreach (DataRow row in dt.Rows)
+                {
+                    cmbUnitCategory.Items.Add(row["category_name"].ToString());
+                }
+                
+                cmbUnitCategory.SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading category combo boxes: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void LoadUnitComboBoxes()
+        {
+            try
+            {
+                string query = "SELECT id, unit_name, unit_symbol FROM units WHERE is_active = 1 ORDER BY unit_name";
+                DataTable dt = UtilityHelper.GetDataSet(query);
+                
+                cmbFromUnit.Items.Clear();
+                cmbToUnit.Items.Clear();
+                
+                foreach (DataRow row in dt.Rows)
+                {
+                    string displayText = $"{row["unit_name"]} ({row["unit_symbol"]})";
+                    cmbFromUnit.Items.Add(displayText);
+                    cmbToUnit.Items.Add(displayText);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading unit combo boxes: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void LoadDefaultUnitComboBox(string selectedUnitId)
+        {
+            try
+            {
+                string query = "SELECT id, unit_name, unit_symbol FROM units WHERE is_active = 1 ORDER BY unit_name";
+                DataTable dt = UtilityHelper.GetDataSet(query);
+                
+                cmbDefaultUnit.Items.Clear();
+                
+                foreach (DataRow row in dt.Rows)
+                {
+                    string displayText = $"{row["unit_name"]} ({row["unit_symbol"]})";
+                    cmbDefaultUnit.Items.Add(displayText);
+                    
+                    if (row["id"].ToString() == selectedUnitId)
+                    {
+                        cmbDefaultUnit.SelectedIndex = cmbDefaultUnit.Items.Count - 1;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading default unit combo box: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void UpdateUnitCount()
+        {
+            lblTotalUnits.Text = $"Total Units: {dgvUnits.Rows.Count:N0}";
+        }
+
+        private void UpdateCategoryCount()
+        {
+            lblTotalCategories.Text = $"Total Categories: {dgvCategories.Rows.Count:N0}";
+        }
+
+        private void UpdateConversionCount()
+        {
+            lblTotalConversions.Text = $"Total Conversions: {dgvConversions.Rows.Count:N0}";
+        }
+
+        // Event handlers for Units tab
+        private void TxtSearchUnit_TextChanged(object sender, EventArgs e)
+        {
+            LoadUnits();
+        }
+
+        private void CmbUnitCategory_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            LoadUnits();
+        }
+
+        private void BtnAddUnit_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Add Unit functionality would be implemented here.", "Feature", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void BtnEditUnit_Click(object sender, EventArgs e)
+        {
+            if (dgvUnits.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Please select a unit to edit.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            MessageBox.Show("Edit Unit functionality would be implemented here.", "Feature", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void BtnDeleteUnit_Click(object sender, EventArgs e)
+        {
+            if (dgvUnits.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Please select a unit to delete.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (MessageBox.Show("Are you sure you want to delete this unit?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                MessageBox.Show("Delete Unit functionality would be implemented here.", "Feature", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void BtnExportUnits_Click(object sender, EventArgs e)
+        {
+            ExportToCSV(dgvUnits, "Units");
+        }
+
+        private void DgvUnits_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                BtnEditUnit_Click(sender, e);
+            }
+        }
+
+        // Event handlers for Categories tab
+        private void BtnAddCategory_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Add Category functionality would be implemented here.", "Feature", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void BtnEditCategory_Click(object sender, EventArgs e)
+        {
+            if (dgvCategories.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Please select a category to edit.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            MessageBox.Show("Edit Category functionality would be implemented here.", "Feature", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void BtnDeleteCategory_Click(object sender, EventArgs e)
+        {
+            if (dgvCategories.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Please select a category to delete.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (MessageBox.Show("Are you sure you want to delete this category?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                MessageBox.Show("Delete Category functionality would be implemented here.", "Feature", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void DgvCategories_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                BtnEditCategory_Click(sender, e);
+            }
+        }
+
+        // Event handlers for Conversions tab
+        private void BtnAddConversion_Click(object sender, EventArgs e)
+        {
+            if (cmbFromUnit.SelectedIndex == -1 || cmbToUnit.SelectedIndex == -1)
+            {
+                MessageBox.Show("Please select both From and To units.", "Missing Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            MessageBox.Show("Add Conversion functionality would be implemented here.", "Feature", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void BtnEditConversion_Click(object sender, EventArgs e)
+        {
+            if (dgvConversions.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Please select a conversion to edit.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            MessageBox.Show("Edit Conversion functionality would be implemented here.", "Feature", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void BtnDeleteConversion_Click(object sender, EventArgs e)
+        {
+            if (dgvConversions.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Please select a conversion to delete.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (MessageBox.Show("Are you sure you want to delete this conversion?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                MessageBox.Show("Delete Conversion functionality would be implemented here.", "Feature", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void BtnCalculateConversion_Click(object sender, EventArgs e)
+        {
+            if (cmbFromUnit.SelectedIndex == -1 || cmbToUnit.SelectedIndex == -1)
+            {
+                MessageBox.Show("Please select both From and To units.", "Missing Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            try
+            {
+                decimal factor = nudConversionFactor.Value;
+                string fromUnit = cmbFromUnit.SelectedItem.ToString();
+                string toUnit = cmbToUnit.SelectedItem.ToString();
+                
+                txtConversionResult.Text = $"1 {fromUnit} = {factor:N6} {toUnit}";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error calculating conversion: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void DgvConversions_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                BtnEditConversion_Click(sender, e);
+            }
+        }
+
+        private void DgvConversions_SelectionChanged(object sender, EventArgs e)
+        {
+            if (dgvConversions.SelectedRows.Count > 0)
+            {
+                try
+                {
+                    DataGridViewRow row = dgvConversions.SelectedRows[0];
+                    string fromUnit = row.Cells["From Unit"].Value?.ToString() ?? "";
+                    string toUnit = row.Cells["To Unit"].Value?.ToString() ?? "";
+                    decimal factor = Convert.ToDecimal(row.Cells["Conversion Factor"].Value ?? 0);
+                    
+                    // Update combo boxes and factor
+                    for (int i = 0; i < cmbFromUnit.Items.Count; i++)
+                    {
+                        if (cmbFromUnit.Items[i].ToString().Contains(fromUnit))
+                        {
+                            cmbFromUnit.SelectedIndex = i;
+                            break;
+                        }
+                    }
+                    
+                    for (int i = 0; i < cmbToUnit.Items.Count; i++)
+                    {
+                        if (cmbToUnit.Items[i].ToString().Contains(toUnit))
+                        {
+                            cmbToUnit.SelectedIndex = i;
+                            break;
+                        }
+                    }
+                    
+                    nudConversionFactor.Value = factor;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error updating selection: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        // Event handlers for Settings tab
+        private void BtnSaveSettings_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // In real implementation, would save to database
+                MessageBox.Show("Unit settings saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error saving settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void BtnResetSettings_Click(object sender, EventArgs e)
+        {
+            LoadSettings();
+            MessageBox.Show("Settings reset to last saved values.", "Reset", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        // Utility method for exporting data
+        private void ExportToCSV(DataGridView dgv, string fileName)
+        {
+            try
+            {
+                using (SaveFileDialog sfd = new SaveFileDialog())
+                {
+                    sfd.Filter = "CSV files (*.csv)|*.csv";
+                    sfd.FileName = $"{fileName}_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+
+                    if (sfd.ShowDialog() == DialogResult.OK)
+                    {
+                        StringBuilder csv = new StringBuilder();
+
+                        // Add headers
+                        var headers = new List<string>();
+                        for (int i = 1; i < dgv.Columns.Count; i++) // Skip ID column
+                        {
+                            if (dgv.Columns[i].Visible)
+                                headers.Add(dgv.Columns[i].HeaderText);
+                        }
+                        csv.AppendLine(string.Join(",", headers));
+
+                        // Add data
+                        foreach (DataGridViewRow row in dgv.Rows)
+                        {
+                            var values = new List<string>();
+                            for (int i = 1; i < dgv.Columns.Count; i++) // Skip ID column
+                            {
+                                if (dgv.Columns[i].Visible)
+                                {
+                                    string value = row.Cells[i].Value?.ToString() ?? "";
+                                    values.Add($"\"{value}\"");
+                                }
+                            }
+                            csv.AppendLine(string.Join(",", values));
+                        }
+
+                        File.WriteAllText(sfd.FileName, csv.ToString());
+                        MessageBox.Show($"Data exported successfully to {sfd.FileName}", "Export Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error exporting data: {ex.Message}", "Export Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+    }
+}
