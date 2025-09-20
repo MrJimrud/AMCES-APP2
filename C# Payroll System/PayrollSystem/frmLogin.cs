@@ -99,7 +99,7 @@ namespace PayrollSystem
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '*';
             this.txtPassword.Size = new Size(200, 25);
-            this.txtPassword.Text = "admin";        // Default password for testing 
+            this.txtPassword.Text = "admin123";        // Default password for testing 
             this.txtPassword.TabIndex = 4;
             this.txtPassword.KeyPress += TxtPassword_KeyPress;
 

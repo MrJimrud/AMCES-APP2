@@ -38,7 +38,7 @@ namespace PayrollSystem
                 string configPath = Path.Combine(Application.StartupPath, "config.ini");
                 
                 GlobalVariables.DB_Server = IniManager.ReadIni(configPath, "Settings", "DB_Server", "localhost");
-                GlobalVariables.DB_Name = IniManager.ReadIni(configPath, "Settings", "DB_Name", "payroll_db");
+                GlobalVariables.DB_Name = IniManager.ReadIni(configPath, "Settings", "DB_Name", "payroll_system");
                 GlobalVariables.DB_UserID = IniManager.ReadIni(configPath, "Settings", "DB_UserID", "root");
                 GlobalVariables.DB_Password = IniManager.ReadIni(configPath, "Settings", "DB_Password", "");
 
@@ -245,7 +245,7 @@ namespace PayrollSystem
             {
                 if (connection.State == ConnectionState.Open)
                     connection.Close();
-                
+
                 connection.Open();
                 MySqlDataAdapter adapter = new MySqlDataAdapter(commandText, connection);
                 DataTable dataTable = new DataTable();

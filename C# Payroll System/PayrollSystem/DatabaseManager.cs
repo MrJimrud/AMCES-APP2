@@ -82,7 +82,6 @@ namespace PayrollSystem
                 
                 // Build MariaDB-compatible connection string with explicit password parameter
                 connectionString = $"server={DBServer}; port=3306; database={DBName}; uid={DBUserID}; pwd={DBPassword ?? ""}; sslmode=none;";
-                
                 // Log connection string for debugging (without password)
                 var debugConnectionString = $"server={DBServer};port=3306;database={DBName};uid={DBUserID};pwd=***;sslmode=none;";
                 System.Diagnostics.Debug.WriteLine($"Connection string: {debugConnectionString}");
