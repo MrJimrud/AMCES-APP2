@@ -45,6 +45,7 @@ namespace PayrollSystem
         public frmPhilhealth()
         {
             InitializeComponent();
+            UtilityHelper.InitializeConnection();
             LoadInitialData();
         }
 
