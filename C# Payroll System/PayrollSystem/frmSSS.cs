@@ -1394,7 +1394,7 @@ namespace PayrollSystem
             try
             {
                 string query = @"UPDATE payroll_details pd
-                    INNER JOIN employee_info ei ON pd.employee_id = ei.id
+                    INNER JOIN employees ei ON pd.employee_id = ei.employee_id 
                     INNER JOIN sss_contribution_table sct ON 
                         pd.gross_pay BETWEEN sct.salary_from AND sct.salary_to
                         AND sct.is_active = 1
@@ -1404,7 +1404,7 @@ namespace PayrollSystem
                     WHERE 
                         pd.payroll_date BETWEEN @fromDate AND @toDate
                         AND (@departmentId = 0 OR ei.department_id = @departmentId)
-                        AND pd.payroll_period_id = @payPeriodId";
+                        AND pd.period_id = @payPeriodId";
 
                 var parameters = new MySqlParameter[]
                 {
