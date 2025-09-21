@@ -416,6 +416,7 @@ namespace PayrollSystem
                 Dock = DockStyle.Fill
             };
             panelGrid.Controls.Add(dgvJobTitles);
+            //added
             panelList.Controls.Add(panelGrid);
             panelList.Controls.Add(panelSearch);
 
