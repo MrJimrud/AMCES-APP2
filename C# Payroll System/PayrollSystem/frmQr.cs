@@ -530,7 +530,7 @@ namespace PayrollSystem
                         id,
                         CONCAT(employee_id, ' - ', first_name, ' ', last_name) as display_name
                     FROM tbl_employee 
-                    WHERE status = 'Active'
+                    WHERE is_active = 'Active'
                     ORDER BY first_name, last_name";
 
                 DataTable dt = UtilityHelper.GetDataSet(query);
