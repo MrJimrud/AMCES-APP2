@@ -345,7 +345,7 @@ namespace PayrollSystem
                 Dock = DockStyle.Top,
                 Height = 70
             };
-            panelList.Controls.Add(panelSearch);
+            //panelList.Controls.Add(panelSearch);
 
             lblSearch = new Label
             {
@@ -417,6 +417,8 @@ namespace PayrollSystem
             };
             panelGrid.Controls.Add(dgvJobTitles);
             panelList.Controls.Add(panelGrid);
+            panelList.Controls.Add(panelSearch);
+
         }
 
         private void LoadDepartments()
