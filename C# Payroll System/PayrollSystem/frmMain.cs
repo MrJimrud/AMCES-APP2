@@ -15,6 +15,7 @@ namespace PayrollSystem
         public frmMain()
         {
             InitializeComponent();
+            UtilityHelper.InitializeConnection();
             this.Load += FrmMain_Load;
             this.Resize += FrmMain_Resize;
         }
