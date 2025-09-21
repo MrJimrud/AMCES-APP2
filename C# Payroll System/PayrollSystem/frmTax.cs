@@ -1204,14 +1204,14 @@ namespace PayrollSystem
                         FROM employee_tax et
                         INNER JOIN employees e ON et.employee_id = e.employee_id
                         WHERE et.tax_date BETWEEN '{fromDate:yyyy-MM-dd}' AND '{toDate:yyyy-MM-dd}'
-                        GROUP BY e.id, e.first_name, e.last_name, e.employee_id, e.department
+                        GROUP BY e.employee_id, e.first_name, e.last_name, e.department
                         ORDER BY e.last_name, e.first_name";
 
                 case "Tax by Department":
+                      // COUNT(DISTINCT e.id) as 'Employee Count',
                     return $@"
                         SELECT 
                             e.department as 'Department',
-                            COUNT(DISTINCT e.id) as 'Employee Count',
                             FORMAT(SUM(et.gross_income), 2) as 'Total Gross Income',
                             FORMAT(SUM(et.taxable_income), 2) as 'Total Taxable Income',
                             FORMAT(SUM(et.tax_due), 2) as 'Total Tax Due',
@@ -1235,7 +1235,7 @@ namespace PayrollSystem
                             FORMAT(SUM(et.withholding_tax), 2) as 'Tax Withheld',
                             YEAR(et.tax_date) as 'Year'
                         FROM tbl_employee_tax et
-                        INNER JOIN tbl_employee e ON et.employee_id = e.id
+                        INNER JOIN tbl_employee e ON et.employee_id = e.employee_id
                         WHERE et.tax_date BETWEEN '{fromDate:yyyy-MM-dd}' AND '{toDate:yyyy-MM-dd}'
                         GROUP BY e.id, e.first_name, e.last_name, e.employee_id, e.department, YEAR(et.tax_date)
                         ORDER BY e.last_name, e.first_name";
