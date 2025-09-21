@@ -63,7 +63,6 @@ namespace PayrollSystem
         public frmSSS()
         {
             InitializeComponent();
-            UtilityHelper.InitializeConnection();
             LoadInitialData();
         }
 
