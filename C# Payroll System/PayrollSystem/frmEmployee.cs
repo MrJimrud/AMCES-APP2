@@ -15,6 +15,15 @@ namespace PayrollSystem
         private string imagePath = "";
         private TextBox txtEmployeeId;
         private Label lblEmployeeId;
+        private TextBox txtSSS;
+        private Label lblSSS;
+        private TextBox txtPagIbig;
+        private Label lblPagIbig;
+        private TextBox txtPhilHealth;
+        private Label lblPhilHealth;
+        private TextBox txtTIN;
+        private Label lblTIN;
+        private TabPage tabBenefits;
 
         public frmEmployee()
         {
@@ -46,6 +55,7 @@ namespace PayrollSystem
             this.tabPersonal = new TabPage();
             this.tabEmployment = new TabPage();
             this.tabSalary = new TabPage();
+            this.tabBenefits = new TabPage();
             this.tabContact = new TabPage();
             
             // Personal Info Tab Controls
@@ -96,6 +106,16 @@ namespace PayrollSystem
             this.lblBankName = new Label();
             this.txtBankName = new TextBox();
             
+            // Government Benefits Controls - Moved to Benefits tab
+            this.lblSSS = new Label();
+            this.txtSSS = new TextBox();
+            this.lblPagIbig = new Label();
+            this.txtPagIbig = new TextBox();
+            this.lblPhilHealth = new Label();
+            this.txtPhilHealth = new TextBox();
+            this.lblTIN = new Label();
+            this.txtTIN = new TextBox();
+            
             // Contact Tab Controls
             this.lblAddress = new Label();
             this.txtAddress = new TextBox();
@@ -129,6 +149,7 @@ namespace PayrollSystem
             this.tabPersonal.SuspendLayout();
             this.tabEmployment.SuspendLayout();
             this.tabSalary.SuspendLayout();
+            this.tabBenefits.SuspendLayout();
             this.tabContact.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picEmployee)).BeginInit();
             this.panelButtons.SuspendLayout();
@@ -163,6 +184,7 @@ namespace PayrollSystem
             this.tabControl.Controls.Add(this.tabPersonal);
             this.tabControl.Controls.Add(this.tabEmployment);
             this.tabControl.Controls.Add(this.tabSalary);
+            this.tabControl.Controls.Add(this.tabBenefits);
             this.tabControl.Controls.Add(this.tabContact);
             this.tabControl.Font = new Font("Segoe UI", 10F);
             this.tabControl.Location = new Point(20, 80);
@@ -467,11 +489,19 @@ namespace PayrollSystem
             this.tabSalary.Controls.Add(this.lblAllowances);
             this.tabSalary.Controls.Add(this.txtBasicSalary);
             this.tabSalary.Controls.Add(this.lblBasicSalary);
+            this.tabSalary.Controls.Add(this.txtSSS);
+            this.tabSalary.Controls.Add(this.lblSSS);
+            this.tabSalary.Controls.Add(this.txtPagIbig);
+            this.tabSalary.Controls.Add(this.lblPagIbig);
+            this.tabSalary.Controls.Add(this.txtPhilHealth);
+            this.tabSalary.Controls.Add(this.lblPhilHealth);
+            this.tabSalary.Controls.Add(this.txtTIN);
+            this.tabSalary.Controls.Add(this.lblTIN);
             this.tabSalary.Location = new Point(4, 28);
             this.tabSalary.Name = "tabSalary";
             this.tabSalary.Size = new Size(852, 418);
             this.tabSalary.TabIndex = 2;
-            this.tabSalary.Text = "Salary & Benefits";
+            this.tabSalary.Text = "Salary";
 
             // Salary Controls Layout
             // Basic Salary
@@ -534,6 +564,76 @@ namespace PayrollSystem
             this.txtBankName.Name = "txtBankName";
             this.txtBankName.Size = new Size(300, 25);
 
+            // Government benefits fields moved to the Benefits tab
+
+            // 
+            // tabBenefits
+            // 
+            this.tabBenefits.BackColor = Color.White;
+            this.tabBenefits.Controls.Add(this.txtTIN);
+            this.tabBenefits.Controls.Add(this.lblTIN);
+            this.tabBenefits.Controls.Add(this.txtPhilHealth);
+            this.tabBenefits.Controls.Add(this.lblPhilHealth);
+            this.tabBenefits.Controls.Add(this.txtPagIbig);
+            this.tabBenefits.Controls.Add(this.lblPagIbig);
+            this.tabBenefits.Controls.Add(this.txtSSS);
+            this.tabBenefits.Controls.Add(this.lblSSS);
+            this.tabBenefits.Location = new Point(4, 28);
+            this.tabBenefits.Name = "tabBenefits";
+            this.tabBenefits.Size = new Size(852, 418);
+            this.tabBenefits.TabIndex = 3;
+            this.tabBenefits.Text = "Government Benefits";
+            
+            // Benefits Controls Layout
+            int benefitsStartX = 50;
+            int benefitsStartY = 50;
+            int benefitsRowHeight = 40;
+            int benefitsLabelWidth = 120;
+            
+            // SSS Number
+            this.lblSSS.AutoSize = true;
+            this.lblSSS.Location = new Point(benefitsStartX, benefitsStartY);
+            this.lblSSS.Name = "lblSSS";
+            this.lblSSS.Size = new Size(85, 19);
+            this.lblSSS.Text = "SSS Number:";
+            
+            this.txtSSS.Location = new Point(benefitsStartX + benefitsLabelWidth + 30, benefitsStartY - 3);
+            this.txtSSS.Name = "txtSSS";
+            this.txtSSS.Size = new Size(300, 25);
+
+            // Pag-IBIG Number
+            this.lblPagIbig.AutoSize = true;
+            this.lblPagIbig.Location = new Point(benefitsStartX, benefitsStartY + benefitsRowHeight);
+            this.lblPagIbig.Name = "lblPagIbig";
+            this.lblPagIbig.Size = new Size(110, 19);
+            this.lblPagIbig.Text = "Pag-IBIG Number:";
+            
+            this.txtPagIbig.Location = new Point(benefitsStartX + benefitsLabelWidth + 30, benefitsStartY + benefitsRowHeight - 3);
+            this.txtPagIbig.Name = "txtPagIbig";
+            this.txtPagIbig.Size = new Size(300, 25);
+
+            // PhilHealth Number
+            this.lblPhilHealth.AutoSize = true;
+            this.lblPhilHealth.Location = new Point(benefitsStartX, benefitsStartY + benefitsRowHeight * 2);
+            this.lblPhilHealth.Name = "lblPhilHealth";
+            this.lblPhilHealth.Size = new Size(120, 19);
+            this.lblPhilHealth.Text = "PhilHealth Number:";
+            
+            this.txtPhilHealth.Location = new Point(benefitsStartX + benefitsLabelWidth + 30, benefitsStartY + benefitsRowHeight * 2 - 3);
+            this.txtPhilHealth.Name = "txtPhilHealth";
+            this.txtPhilHealth.Size = new Size(300, 25);
+
+            // TIN Number
+            this.lblTIN.AutoSize = true;
+            this.lblTIN.Location = new Point(benefitsStartX, benefitsStartY + benefitsRowHeight * 3);
+            this.lblTIN.Name = "lblTIN";
+            this.lblTIN.Size = new Size(85, 19);
+            this.lblTIN.Text = "TIN Number:";
+            
+            this.txtTIN.Location = new Point(benefitsStartX + benefitsLabelWidth + 30, benefitsStartY + benefitsRowHeight * 3 - 3);
+            this.txtTIN.Name = "txtTIN";
+            this.txtTIN.Size = new Size(300, 25);
+            
             // 
             // tabContact
             // 
@@ -559,7 +659,7 @@ namespace PayrollSystem
             this.tabContact.Location = new Point(4, 28);
             this.tabContact.Name = "tabContact";
             this.tabContact.Size = new Size(852, 418);
-            this.tabContact.TabIndex = 3;
+            this.tabContact.TabIndex = 4;
             this.tabContact.Text = "Contact Information";
 
             // Contact Controls Layout
@@ -976,6 +1076,10 @@ namespace PayrollSystem
                             payroll_type = @payroll_type,
                             bank_account = @bank_account,
                             bank_name = @bank_name,
+                            sss_number = @sss_number,
+                            pagibig_number = @pagibig_number,
+                            philhealth_number = @philhealth_number,
+                            tin_number = @tin_number,
                             address = @address,
                             city = @city,
                             province = @province,
@@ -996,12 +1100,14 @@ namespace PayrollSystem
                         (employee_id, first_name, middle_name, last_name, gender, birth_date, civil_status, 
                          nationality, religion, department_id, job_title_id, employment_type, hire_date, status, 
                          supervisor_id, basic_salary, allowances, payroll_type, bank_account, bank_name, 
+                         sss_number, pagibig_number, philhealth_number, tin_number,
                          address, city, province, zip_code, phone, mobile, email, emergency_contact, 
                          emergency_phone, photo_path, created_date) 
                         VALUES 
                         (@employee_id, @first_name, @middle_name, @last_name, @gender, @birth_date, @civil_status, 
                          @nationality, @religion, @department_id, @job_title_id, @employment_type, @hire_date, @status, 
                          @supervisor_id, @basic_salary, @allowances, @payroll_type, @bank_account, @bank_name, 
+                         @sss_number, @pagibig_number, @philhealth_number, @tin_number,
                          @address, @city, @province, @zip_code, @phone, @mobile, @email, @emergency_contact, 
                          @emergency_phone, @photo_path, NOW())";
                 }
@@ -1036,6 +1142,13 @@ namespace PayrollSystem
                 parameters.Add("@payroll_type", cmbPayrollType.Text);
                 parameters.Add("@bank_account", txtBankAccount.Text.Trim());
                 parameters.Add("@bank_name", txtBankName.Text.Trim());
+                
+                // Government benefits information
+                parameters.Add("@sss_number", txtSSS.Text.Trim());
+                parameters.Add("@pagibig_number", txtPagIbig.Text.Trim());
+                parameters.Add("@philhealth_number", txtPhilHealth.Text.Trim());
+                parameters.Add("@tin_number", txtTIN.Text.Trim());
+                
                 parameters.Add("@address", txtAddress.Text.Trim());
                 parameters.Add("@city", txtCity.Text.Trim());
                 parameters.Add("@province", txtProvince.Text.Trim());
@@ -1614,6 +1727,12 @@ namespace PayrollSystem
                     cmbPayrollType.Text = row["payroll_type"].ToString();
                     txtBankAccount.Text = row["bank_account"].ToString();
                     txtBankName.Text = row["bank_name"].ToString();
+                    
+                    // Load government benefits information
+                    txtSSS.Text = row["sss_number"] != DBNull.Value ? row["sss_number"].ToString() : "";
+                    txtPagIbig.Text = row["pagibig_number"] != DBNull.Value ? row["pagibig_number"].ToString() : "";
+                    txtPhilHealth.Text = row["philhealth_number"] != DBNull.Value ? row["philhealth_number"].ToString() : "";
+                    txtTIN.Text = row["tin_number"] != DBNull.Value ? row["tin_number"].ToString() : "";
                 
                     txtAddress.Text = row["address"].ToString();
                     txtCity.Text = row["city"].ToString();

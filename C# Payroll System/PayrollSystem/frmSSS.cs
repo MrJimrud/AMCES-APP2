@@ -706,37 +706,62 @@ namespace PayrollSystem
         {
             try
             {
+                // Clear any existing data
+                dgvContributionTable.DataSource = null;
+                dgvContributionTable.Rows.Clear();
+                dgvContributionTable.Columns.Clear();
+
                 string query = @"
                     SELECT 
                         id,
-                        FORMAT(salary_from, 2) as 'Salary From',
-                        FORMAT(salary_to, 2) as 'Salary To',
-                        FORMAT(salary_credit, 2) as 'Salary Credit',
-                        FORMAT(employee_contribution, 2) as 'Employee Contribution',
-                        FORMAT(employer_contribution, 2) as 'Employer Contribution',
-                        FORMAT(total_contribution, 2) as 'Total Contribution',
-                        effective_date as 'Effective Date',
-                        CASE WHEN is_active = 1 THEN 'Active' ELSE 'Inactive' END as 'Status'
+                        salary_from,
+                        salary_to,
+                        salary_credit,
+                        employee_contribution,
+                        employer_contribution,
+                        total_contribution,
+                        effective_date,
+                        CASE WHEN is_active = 1 THEN 'Active' ELSE 'Inactive' END as Status
                     FROM sss_contribution_table
                     ORDER BY salary_from";
 
                 DataTable dt = UtilityHelper.GetDataSet(query);
-                dgvContributionTable.DataSource = dt;
+                
+                // Set up the DataGridView columns with proper headers
+                dgvContributionTable.Columns.Add("ID", "ID");
+                dgvContributionTable.Columns.Add("RangeFrom", "Range From");
+                dgvContributionTable.Columns.Add("RangeTo", "Range To");
+                dgvContributionTable.Columns.Add("SalaryCredit", "Salary Credit");
+                dgvContributionTable.Columns.Add("EmployeeShare", "Employee Share");
+                dgvContributionTable.Columns.Add("EmployerShare", "Employer Share");
+                dgvContributionTable.Columns.Add("TotalContribution", "Total Contribution");
+                dgvContributionTable.Columns.Add("EffectiveDate", "Effective Date");
+                dgvContributionTable.Columns.Add("Status", "Status");
+                
+                // Add rows from the DataTable
+                foreach (DataRow row in dt.Rows)
+                {
+                    dgvContributionTable.Rows.Add(
+                        row["id"],
+                        decimal.Parse(row["salary_from"].ToString()).ToString("N2"),
+                        decimal.Parse(row["salary_to"].ToString()).ToString("N2"),
+                        decimal.Parse(row["salary_credit"].ToString()).ToString("N2"),
+                        decimal.Parse(row["employee_contribution"].ToString()).ToString("N2"),
+                        decimal.Parse(row["employer_contribution"].ToString()).ToString("N2"),
+                        decimal.Parse(row["total_contribution"].ToString()).ToString("N2"),
+                        Convert.ToDateTime(row["effective_date"]).ToString("MM/dd/yyyy"),
+                        row["Status"]
+                    );
+                }
 
-                if (dgvContributionTable.Columns["id"] != null)
-                    dgvContributionTable.Columns["id"].Visible = false;
+                // Hide ID column
+                dgvContributionTable.Columns["ID"].Visible = false;
 
                 // Format currency columns
                 FormatCurrencyColumns(dgvContributionTable, new[] {
-                    "Salary From", "Salary To", "Salary Credit",
-                    "Employee Contribution", "Employer Contribution", "Total Contribution"
+                    "RangeFrom", "RangeTo", "SalaryCredit",
+                    "EmployeeShare", "EmployerShare", "TotalContribution"
                 });
-
-                // Format date column
-                if (dgvContributionTable.Columns["Effective Date"] != null)
-                {
-                    dgvContributionTable.Columns["Effective Date"].DefaultCellStyle.Format = "MM/dd/yyyy";
-                }
 
                 UpdateRangeCount();
             }

@@ -518,7 +518,7 @@ namespace PayrollSystem
                         MONTHNAME(pc.contribution_date) as 'Month',
                         YEAR(pc.contribution_date) as 'Year',
                         pc.contribution_date as 'Date'
-                    FROM philhealth_contributions pc
+                    FROM philihealth_contributions pc
                 INNER JOIN employees e ON pc.employee_id = e.employee_id
                     WHERE YEAR(pc.contribution_date) = YEAR(CURDATE())
                     ORDER BY pc.contribution_date DESC";

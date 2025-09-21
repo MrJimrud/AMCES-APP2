@@ -52,6 +52,7 @@ namespace PayrollSystem
         public frmQr()
         {
             InitializeComponent();
+             UtilityHelper.InitializeConnection();
             LoadInitialData();
         }
 
