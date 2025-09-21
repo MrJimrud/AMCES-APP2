@@ -168,7 +168,7 @@ namespace PayrollSystem
             this.tabControl.Location = new Point(20, 80);
             this.tabControl.Name = "tabControl";
             this.tabControl.SelectedIndex = 0;
-            this.tabControl.Size = new Size(860, 450);
+            this.tabControl.Size = new Size(860, 550);
             this.tabControl.TabIndex = 1;
 
             // 
