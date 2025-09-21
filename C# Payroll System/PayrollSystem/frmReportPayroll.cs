@@ -414,7 +414,7 @@ namespace PayrollSystem
                                 CONCAT(period_name, ' (', DATE_FORMAT(date_from, '%m/%d/%Y'), ' - ', DATE_FORMAT(date_to, '%m/%d/%Y'), ')') as period_display,
                                 date_from, date_to
                                 FROM payroll_periods 
-                                WHERE status = 'Active' 
+                                WHERE is_active  = 'Active' 
                                 ORDER BY date_from DESC";
                 
                 DataTable dt = UtilityHelper.GetDataTable(query);
@@ -444,7 +444,7 @@ namespace PayrollSystem
                 cmbDepartment.Items.Clear();
                 cmbDepartment.Items.Add(new { Text = "All Departments", Value = "" });
                 
-                string query = "SELECT department_id, department_name FROM departments WHERE status = 'Active' ORDER BY department_name";
+                string query = "SELECT department_id, department_name FROM departments WHERE is_active = 'Active' ORDER BY department_name";
                 DataTable dt = UtilityHelper.GetDataTable(query);
                 
                 foreach (DataRow row in dt.Rows)
