@@ -1645,14 +1645,14 @@ namespace PayrollSystem
                         FROM sss_contributions sc
                         INNER JOIN employees e ON sc.employee_id = e.employee_id
                         WHERE sc.contribution_date BETWEEN '{fromDate:yyyy-MM-dd}' AND '{toDate:yyyy-MM-dd}'
-                        GROUP BY e.id, e.first_name, e.last_name, e.employee_id, e.department
+                        GROUP BY e.employee_id, e.first_name, e.last_name, e.department
                         ORDER BY e.last_name, e.first_name";
 
                 case "Quarterly Summary":
+                    //COUNT(DISTINCT e.id) as 'Employee Count',
                     return $@"
                         SELECT 
                             e.department as 'Department',
-                            COUNT(DISTINCT e.id) as 'Employee Count',
                             FORMAT(SUM(sc.salary_credit), 2) as 'Total Salary Credit',
                             FORMAT(SUM(sc.employee_contribution), 2) as 'Employee Share',
                             FORMAT(SUM(sc.employer_contribution), 2) as 'Employer Share',
