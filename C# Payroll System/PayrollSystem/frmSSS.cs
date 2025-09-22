@@ -816,6 +816,7 @@ namespace PayrollSystem
         {
             try
             {
+
                 // Build the query with filters
                 //Edited
                 string query = @"
@@ -834,6 +835,7 @@ namespace PayrollSystem
                     INNER JOIN tbl_employee e ON sc.employee_id = e.id
                     WHERE 1=1";
                 //Last
+
 
                 List<MySqlParameter> parameters = new List<MySqlParameter>();
 
