@@ -816,26 +816,49 @@ namespace PayrollSystem
         {
             try
             {
-                string query = @"
-                    SELECT 
-                        sc.id,
-                        CONCAT(e.first_name, ' ', e.last_name) as 'Employee Name',
-                        e.employee_id as 'Employee ID',
-                        d.department_name as 'Department',
-                        FORMAT(sc.salary_credit, 2) as 'Salary Credit',
-                        FORMAT(sc.employee_share, 2) as 'Employee Share',
-                        FORMAT(sc.employer_share, 2) as 'Employer Share',
-                        FORMAT(sc.total_contribution, 2) as 'Total Contribution',
-                        MONTHNAME(sc.contribution_date) as 'Month',
-                        YEAR(sc.contribution_date) as 'Year',
-                        sc.contribution_date as 'Date'
-                    FROM sss_contributions sc
-                    INNER JOIN employees e ON sc.employee_id = e.employee_id
-                    INNER JOIN departments d ON e.department_id = d.department_id
-                    WHERE YEAR(sc.contribution_date) = YEAR(CURDATE())
-                    ORDER BY sc.contribution_date DESC, e.last_name, e.first_name";
 
-                DataTable dt = UtilityHelper.GetDataSet(query);
+                // Build the query with filters
+
+
+                    FROM tbl_sss_contribution sc
+                    INNER JOIN tbl_employee e ON sc.employee_id = e.id
+                    WHERE 1=1";
+
+
+                List<MySqlParameter> parameters = new List<MySqlParameter>();
+
+                // Add search filter
+                if (!string.IsNullOrWhiteSpace(txtSearchEmployee.Text))
+                {
+                    query += @" AND (e.first_name LIKE @searchTerm 
+                              OR e.last_name LIKE @searchTerm 
+                              OR e.employee_id LIKE @searchTerm)";
+                    parameters.Add(new MySqlParameter("@searchTerm", $"%{txtSearchEmployee.Text}%"));
+                }
+
+                // Add department filter
+                if (cmbDepartment.SelectedIndex > 0 && cmbDepartment.SelectedValue != null)
+                {
+                    query += " AND e.department_id = @departmentId";
+                    parameters.Add(new MySqlParameter("@departmentId", cmbDepartment.SelectedValue));
+                }
+
+                // Add pay period filter
+                if (cmbPayPeriod.SelectedIndex > 0 && cmbPayPeriod.SelectedValue != null)
+                {
+                    query += " AND sc.pay_period = @payPeriod";
+                    parameters.Add(new MySqlParameter("@payPeriod", cmbPayPeriod.SelectedValue));
+                }
+
+                // Add date range filter
+                query += " AND sc.contribution_date BETWEEN @fromDate AND @toDate";
+                parameters.Add(new MySqlParameter("@fromDate", dtpFromDate.Value.Date));
+                parameters.Add(new MySqlParameter("@toDate", dtpToDate.Value.Date));
+
+                // Add order by clause
+                query += " ORDER BY sc.contribution_date DESC, e.last_name, e.first_name";
+
+                DataTable dt = UtilityHelper.GetDataSet(query, parameters.ToArray());
                 dgvEmployeeContributions.DataSource = dt;
 
                 if (dgvEmployeeContributions.Columns["id"] != null)
@@ -1104,7 +1127,7 @@ namespace PayrollSystem
                     DecimalPlaces = 2,
                     Maximum = 999999,
                     ThousandsSeparator = true,
-                    Value = Convert.ToDecimal(selectedRow.Cells["Salary From"].Value.ToString().Replace(",", ""))
+                    Value = Convert.ToDecimal(selectedRow.Cells["RangeFrom"].Value.ToString().Replace(",", ""))
                 };
 
                 Label lblSalaryTo = new Label { Text = "Salary To:", Location = new Point(20, 60) };
@@ -1115,7 +1138,7 @@ namespace PayrollSystem
                     DecimalPlaces = 2,
                     Maximum = 999999,
                     ThousandsSeparator = true,
-                    Value = Convert.ToDecimal(selectedRow.Cells["Salary To"].Value.ToString().Replace(",", ""))
+                    Value = Convert.ToDecimal(selectedRow.Cells["RangeTo"].Value.ToString().Replace(",", ""))
                 };
 
                 Label lblSalaryCredit = new Label { Text = "Salary Credit:", Location = new Point(20, 100) };
@@ -1126,7 +1149,7 @@ namespace PayrollSystem
                     DecimalPlaces = 2,
                     Maximum = 999999,
                     ThousandsSeparator = true,
-                    Value = Convert.ToDecimal(selectedRow.Cells["Salary Credit"].Value.ToString().Replace(",", ""))
+                    Value = Convert.ToDecimal(selectedRow.Cells["SalaryCredit"].Value.ToString().Replace(",", ""))
                 };
 
                 Label lblEmployeeShare = new Label { Text = "Employee Share:", Location = new Point(20, 140) };
@@ -1137,7 +1160,7 @@ namespace PayrollSystem
                     DecimalPlaces = 2,
                     Maximum = 999999,
                     ThousandsSeparator = true,
-                    Value = Convert.ToDecimal(selectedRow.Cells["Employee Contribution"].Value.ToString().Replace(",", ""))
+                    Value = Convert.ToDecimal(selectedRow.Cells["EmployeeShare"].Value.ToString().Replace(",", ""))
                 };
 
                 Label lblEmployerShare = new Label { Text = "Employer Share:", Location = new Point(20, 180) };
@@ -1148,7 +1171,7 @@ namespace PayrollSystem
                     DecimalPlaces = 2,
                     Maximum = 999999,
                     ThousandsSeparator = true,
-                    Value = Convert.ToDecimal(selectedRow.Cells["Employer Contribution"].Value.ToString().Replace(",", ""))
+                    Value = Convert.ToDecimal(selectedRow.Cells["EmployerShare"].Value.ToString().Replace(",", ""))
                 };
 
                 Label lblEffectiveDate = new Label { Text = "Effective Date:", Location = new Point(20, 220) };
@@ -1157,7 +1180,7 @@ namespace PayrollSystem
                     Location = new Point(150, 220),
                     Size = new Size(200, 23),
                     Format = DateTimePickerFormat.Short,
-                    Value = Convert.ToDateTime(selectedRow.Cells["Effective Date"].Value)
+                    Value = Convert.ToDateTime(selectedRow.Cells["EffectiveDate"].Value)
                 };
 
                 CheckBox chkActive = new CheckBox
@@ -1379,7 +1402,8 @@ namespace PayrollSystem
         {
             try
             {
-                string query = @"UPDATE payroll_details pd
+                // First, calculate the contributions based on salary ranges
+                string calcQuery = @"UPDATE payroll_details pd
                     INNER JOIN employees ei ON pd.employee_id = ei.employee_id 
                     INNER JOIN sss_contribution_table sct ON 
                         pd.gross_pay BETWEEN sct.salary_from AND sct.salary_to
@@ -1392,7 +1416,7 @@ namespace PayrollSystem
                         AND (@departmentId = 0 OR ei.department_id = @departmentId)
                         AND pd.period_id = @payPeriodId";
 
-                var parameters = new MySqlParameter[]
+                var calcParameters = new MySqlParameter[]
                 {
                     new MySqlParameter("@fromDate", dtpFromDate.Value.Date),
                     new MySqlParameter("@toDate", dtpToDate.Value.Date),
@@ -1400,9 +1424,41 @@ namespace PayrollSystem
                     new MySqlParameter("@payPeriodId", cmbPayPeriod.SelectedValue ?? 0)
                 };
 
-                DatabaseManager.ExecuteNonQuery(query, parameters);
+                DatabaseManager.ExecuteNonQuery(calcQuery, calcParameters);
+
+                // Then, insert the calculated contributions into the SSS contributions table
+                string insertQuery = @"INSERT INTO tbl_sss_contribution 
+                    (employee_id, salary_credit, employee_contribution, employer_contribution, 
+                     total_contribution, pay_period, contribution_date)
+                    SELECT 
+                        ei.id,
+                        pd.gross_pay,
+                        pd.sss_contribution,
+                        pd.sss_employer_contribution,
+                        (pd.sss_contribution + pd.sss_employer_contribution),
+                        pd.period_id,
+                        pd.payroll_date
+                    FROM payroll_details pd
+                    INNER JOIN employees ei ON pd.employee_id = ei.employee_id
+                    WHERE 
+                        pd.payroll_date BETWEEN @fromDate AND @toDate
+                        AND (@departmentId = 0 OR ei.department_id = @departmentId)
+                        AND pd.period_id = @payPeriodId
+                        AND pd.sss_contribution > 0";
+
+                var insertParameters = new MySqlParameter[]
+                {
+                    new MySqlParameter("@fromDate", dtpFromDate.Value.Date),
+                    new MySqlParameter("@toDate", dtpToDate.Value.Date),
+                    new MySqlParameter("@departmentId", cmbDepartment.SelectedValue ?? 0),
+                    new MySqlParameter("@payPeriodId", cmbPayPeriod.SelectedValue ?? 0)
+                };
+
+                DatabaseManager.ExecuteNonQuery(insertQuery, insertParameters);
+                
+                // Refresh the grid with the new data
                 LoadEmployeeContributions();
-                MessageBox.Show("SSS contributions calculated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("SSS contributions calculated and saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
@@ -1412,7 +1468,21 @@ namespace PayrollSystem
 
         private void BtnExportContributions_Click(object sender, EventArgs e)
         {
-            ExportToCSV(dgvEmployeeContributions, "SSS_EmployeeContributions");
+            try
+            {
+                if (dgvEmployeeContributions.Rows.Count == 0)
+                {
+                    MessageBox.Show("No data to export.", "Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+                
+                ExportToCSV(dgvEmployeeContributions, "SSS_EmployeeContributions");
+                MessageBox.Show("Data exported successfully!", "Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error exporting data: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         // Event handlers for Settings tab

@@ -1098,17 +1098,12 @@ namespace PayrollSystem
             try
             {
                 string query = @"
-                    UPDATE tax_settings SET 
-                        withholding_rate = @withholding_rate,
-                        minimum_wage = @minimum_wage,
-                        personal_exemption = @personal_exemption,
-                        additional_exemption = @additional_exemption,
-                        auto_calculate = @auto_calculate,
-                        use_annualization = @use_annualization,
-                        include_allowances = @include_allowances,
-                        include_bonus = @include_bonus,
-                        updated_date = NOW()
-                    WHERE id = 1";
+                    INSERT INTO tax_settings 
+                    (withholding_rate, minimum_wage, personal_exemption, additional_exemption, 
+                     auto_calculate, use_annualization, include_allowances, include_bonus, effective_date)
+                    VALUES 
+                    (@withholding_rate, @minimum_wage, @personal_exemption, @additional_exemption, 
+                     @auto_calculate, @use_annualization, @include_allowances, @include_bonus, NOW())";
 
                 MySqlParameter[] parameters = new MySqlParameter[]
                 {

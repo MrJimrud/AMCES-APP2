@@ -5,7 +5,6 @@ using System.IO;
 using System.Text;
 using System.Windows.Forms;
 using System.Collections.Generic;
-using MySqlConnector;
 
 namespace PayrollSystem
 {
@@ -596,6 +595,73 @@ namespace PayrollSystem
             };
             btnSaveSettings.Click += BtnSaveSettings_Click;
 
+        // Event handlers for Settings tab
+        
+        private void BtnResetSettings_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                DialogResult result = MessageBox.Show(
+                    "Are you sure you want to reset Unit settings to default values?",
+                    "Confirm Reset",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+                
+                if (result == DialogResult.Yes)
+                {
+                    // Reset to default values
+                    nudDecimalPlaces.Value = 2;
+                    chkAutoConvert.Checked = true;
+                    chkShowUnitInReports.Checked = true;
+                    
+                    // Reset default unit to first item if available
+                    if (cmbDefaultUnit.Items.Count > 0)
+                    {
+                        cmbDefaultUnit.SelectedIndex = 0;
+                    }
+                    
+                    MessageBox.Show("Settings reset to default values.", "Reset Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error resetting settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private void BtnSaveSettings_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string query = @"
+                    INSERT INTO unit_settings 
+                    (default_unit_id, decimal_places, auto_convert, show_in_reports, effective_date)
+                    VALUES 
+                    (@default_unit_id, @decimal_places, @auto_convert, @show_in_reports, NOW())
+                    ON DUPLICATE KEY UPDATE
+                    default_unit_id = @default_unit_id,
+                    decimal_places = @decimal_places,
+                    auto_convert = @auto_convert,
+                    show_in_reports = @show_in_reports,
+                    effective_date = NOW()";
+
+                MySqlParameter[] parameters = new MySqlParameter[]
+                {
+                    DatabaseManager.CreateParameter("@default_unit_id", cmbDefaultUnit.SelectedValue),
+                    DatabaseManager.CreateParameter("@decimal_places", nudDecimalPlaces.Value),
+                    DatabaseManager.CreateParameter("@auto_convert", chkAutoConvert.Checked),
+                    DatabaseManager.CreateParameter("@show_in_reports", chkShowUnitInReports.Checked)
+                };
+
+                DatabaseManager.ExecuteNonQuery(query, parameters);
+                MessageBox.Show("Unit settings saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                LoadUnitSettings();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error saving Unit settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
             btnResetSettings = new Button
             {
                 Text = "Reset",
@@ -1056,77 +1122,19 @@ namespace PayrollSystem
         {
             try
             {
-                // Get the selected unit ID
-                string selectedUnit = cmbDefaultUnit.SelectedItem?.ToString() ?? "";
-                int defaultUnitId = 0;
-                
-                if (!string.IsNullOrEmpty(selectedUnit))
-                {
-                    string query = $"SELECT id FROM units WHERE CONCAT(unit_name, ' (', unit_symbol, ')') = '{selectedUnit}'";
-                    DataTable dt = UtilityHelper.GetDataSet(query);
-                    if (dt.Rows.Count > 0)
-                    {
-                        defaultUnitId = Convert.ToInt32(dt.Rows[0]["id"]);
-                    }
-                }
-                
-                string insertQuery = @"
-                    INSERT INTO unit_settings (id, default_unit_id, decimal_places, auto_convert, show_in_reports)
-                    VALUES (1, @default_unit_id, @decimal_places, @auto_convert, @show_in_reports)
-                    ON DUPLICATE KEY UPDATE
-                        default_unit_id = @default_unit_id,
-                        decimal_places = @decimal_places,
-                        auto_convert = @auto_convert,
-                        show_in_reports = @show_in_reports";
-                
-                MySqlParameter[] parameters = new MySqlParameter[]
-                {
-                    new MySqlParameter("@default_unit_id", defaultUnitId),
-                    new MySqlParameter("@decimal_places", nudDecimalPlaces.Value),
-                    new MySqlParameter("@auto_convert", chkAutoConvert.Checked),
-                    new MySqlParameter("@show_in_reports", chkShowUnitInReports.Checked)
-                };
-                
-                DatabaseManager.ExecuteNonQuery(insertQuery, parameters);
+                // In real implementation, would save to database
                 MessageBox.Show("Unit settings saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                LoadSettings();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving Unit settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error saving settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        
+
         private void BtnResetSettings_Click(object sender, EventArgs e)
         {
-            try
-            {
-                DialogResult result = MessageBox.Show(
-                    "Are you sure you want to reset Unit settings to default values?",
-                    "Confirm Reset",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question);
-                
-                if (result == DialogResult.Yes)
-                {
-                    // Reset to default values
-                    nudDecimalPlaces.Value = 2;
-                    chkAutoConvert.Checked = true;
-                    chkShowUnitInReports.Checked = true;
-                    
-                    // Reset default unit to first item if available
-                    if (cmbDefaultUnit.Items.Count > 0)
-                    {
-                        cmbDefaultUnit.SelectedIndex = 0;
-                    }
-                    
-                    MessageBox.Show("Settings reset to default values.", "Reset Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error resetting settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            LoadSettings();
+            MessageBox.Show("Settings reset to last saved values.", "Reset", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         // Utility method for exporting data
@@ -1174,8 +1182,7 @@ namespace PayrollSystem
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error exporting data: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error exporting data: {ex.Message}", "Export Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
-}

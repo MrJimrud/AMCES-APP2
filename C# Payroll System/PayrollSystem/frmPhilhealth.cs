@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Windows.Forms;
 using System.Collections.Generic;
+using MySqlConnector;
 
 namespace PayrollSystem
 {
@@ -381,7 +382,7 @@ namespace PayrollSystem
                 Location = new Point(150, 32),
                 Size = new Size(120, 23),
                 DecimalPlaces = 2,
-                Maximum = 100,
+                Maximum = 500,
                 Minimum = 0,
                 Value = 4.5m
             };
@@ -398,7 +399,7 @@ namespace PayrollSystem
                 Location = new Point(150, 67),
                 Size = new Size(120, 23),
                 DecimalPlaces = 2,
-                Maximum = 100,
+                Maximum = 500,
                 Minimum = 0,
                 Value = 4.5m
             };
@@ -481,7 +482,7 @@ namespace PayrollSystem
                         CASE WHEN is_active = 1 THEN 'Active' ELSE 'Inactive' END as 'Status',
                         created_date as 'Created Date'
                     FROM philhealth_rates
-                    ORDER BY effective_date DESC";
+                    ORDER BY id DESC";
 
                 DataTable dt = UtilityHelper.GetDataSet(query);
                 dgvRates.DataSource = dt;
@@ -546,7 +547,7 @@ namespace PayrollSystem
         {
             try
             {
-                string query = "SELECT * FROM philhealth_settings WHERE id = 1";
+                string query = "SELECT * FROM philhealth_settings LIMIT 1";
                 DataTable dt = UtilityHelper.GetDataSet(query);
 
                 if (dt.Rows.Count > 0)
@@ -554,8 +555,8 @@ namespace PayrollSystem
                     DataRow row = dt.Rows[0];
                     nudMinSalary.Value = Convert.ToDecimal(row["min_salary"]);
                     nudMaxSalary.Value = Convert.ToDecimal(row["max_salary"]);
-                    nudEmployeeRate.Value = Convert.ToDecimal(row["employee_rate"]);
-                    nudEmployerRate.Value = Convert.ToDecimal(row["employer_rate"]);
+                    nudEmployeeRate.Value = Convert.ToDecimal(row["employee_rate"]) * 100;
+                    nudEmployerRate.Value = Convert.ToDecimal(row["employer_rate"]) * 100;
                     chkAutoCalculate.Checked = Convert.ToBoolean(row["auto_calculate"]);
                     chkIncludeAllowances.Checked = Convert.ToBoolean(row["include_allowances"]);
                 }
@@ -726,26 +727,30 @@ namespace PayrollSystem
         {
             try
             {
-                string query = $@"
-                    INSERT INTO philhealth_settings (id, min_salary, max_salary, employee_rate, employer_rate, auto_calculate, include_allowances, modified_date)
-                    VALUES (1, {nudMinSalary.Value}, {nudMaxSalary.Value}, {nudEmployeeRate.Value}, {nudEmployerRate.Value}, 
-                            {(chkAutoCalculate.Checked ? 1 : 0)}, {(chkIncludeAllowances.Checked ? 1 : 0)}, NOW())
-                    ON DUPLICATE KEY UPDATE
-                    min_salary = {nudMinSalary.Value},
-                    max_salary = {nudMaxSalary.Value},
-                    employee_rate = {nudEmployeeRate.Value},
-                    employer_rate = {nudEmployerRate.Value},
-                    auto_calculate = {(chkAutoCalculate.Checked ? 1 : 0)},
-                    include_allowances = {(chkIncludeAllowances.Checked ? 1 : 0)},
-                    modified_date = NOW()";
+                string query = @"
+                    INSERT INTO philhealth_settings 
+                    (min_salary, max_salary, employee_rate, employer_rate, auto_calculate, include_allowances, effective_date)
+                    VALUES 
+                    (@minSalary, @maxSalary, @employeeRate, @employerRate, @autoCalculate, @includeAllowances, @effectiveDate)";
 
-                DatabaseManager.ExecuteNonQuery(query);
+                var parameters = new MySqlConnector.MySqlParameter[]
+                {
+                    new MySqlConnector.MySqlParameter("@minSalary", nudMinSalary.Value),
+                    new MySqlConnector.MySqlParameter("@maxSalary", nudMaxSalary.Value),
+                    new MySqlConnector.MySqlParameter("@employeeRate", nudEmployeeRate.Value / 100),
+                    new MySqlConnector.MySqlParameter("@employerRate", nudEmployerRate.Value / 100),
+                    new MySqlConnector.MySqlParameter("@autoCalculate", chkAutoCalculate.Checked),
+                    new MySqlConnector.MySqlParameter("@includeAllowances", chkIncludeAllowances.Checked),
+                    new MySqlConnector.MySqlParameter("@effectiveDate", DateTime.Now)
+                };
 
-                MessageBox.Show("PhilHealth settings saved successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                DatabaseManager.ExecuteNonQuery(query, parameters);
+                MessageBox.Show("PhilHealth settings saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                LoadPhilhealthSettings();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error saving PhilHealth settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
