@@ -34,8 +34,7 @@ namespace PayrollSystem
             this.payrollPeriodToolStripMenuItem = new ToolStripMenuItem();
             this.payrollGenerationToolStripMenuItem = new ToolStripMenuItem();
             this.payrollListToolStripMenuItem = new ToolStripMenuItem();
-            this.dtrToolStripMenuItem = new ToolStripMenuItem();
-            this.dtrManagementToolStripMenuItem = new ToolStripMenuItem();
+            
             this.cashAdvanceToolStripMenuItem = new ToolStripMenuItem();
             this.cashAdvanceManagementToolStripMenuItem = new ToolStripMenuItem();
             this.configurationToolStripMenuItem = new ToolStripMenuItem();
@@ -43,11 +42,11 @@ namespace PayrollSystem
             this.philhealthToolStripMenuItem = new ToolStripMenuItem();
             this.taxToolStripMenuItem = new ToolStripMenuItem();
             this.rateToolStripMenuItem = new ToolStripMenuItem();
-            this.qrToolStripMenuItem = new ToolStripMenuItem();
+          
             this.unitToolStripMenuItem = new ToolStripMenuItem();
             this.reportsToolStripMenuItem = new ToolStripMenuItem();
             this.payrollReportToolStripMenuItem = new ToolStripMenuItem();
-            this.dtrReportToolStripMenuItem = new ToolStripMenuItem();
+           
             this.cashAdvanceReportToolStripMenuItem = new ToolStripMenuItem();
             this.payslipReportToolStripMenuItem = new ToolStripMenuItem();
             this.helpToolStripMenuItem = new ToolStripMenuItem();
@@ -66,7 +65,6 @@ namespace PayrollSystem
                 this.fileToolStripMenuItem,
                 this.employeeToolStripMenuItem,
                 this.payrollToolStripMenuItem,
-                this.dtrToolStripMenuItem,
                 this.cashAdvanceToolStripMenuItem,
                 this.configurationToolStripMenuItem,
                 this.reportsToolStripMenuItem,
@@ -173,23 +171,9 @@ namespace PayrollSystem
             this.payrollListToolStripMenuItem.Text = "Payroll List";
             this.payrollListToolStripMenuItem.Click += PayrollListToolStripMenuItem_Click;
 
-            // 
-            // dtrToolStripMenuItem
-            // 
-            this.dtrToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] {
-                this.dtrManagementToolStripMenuItem});
-            this.dtrToolStripMenuItem.Name = "dtrToolStripMenuItem";
-            this.dtrToolStripMenuItem.Size = new Size(39, 20);
-            this.dtrToolStripMenuItem.Text = "DTR";
-
-            // 
-            // dtrManagementToolStripMenuItem
-            // 
-            this.dtrManagementToolStripMenuItem.Name = "dtrManagementToolStripMenuItem";
-            this.dtrManagementToolStripMenuItem.Size = new Size(161, 22);
-            this.dtrManagementToolStripMenuItem.Text = "DTR Management";
-            this.dtrManagementToolStripMenuItem.Click += DtrManagementToolStripMenuItem_Click;
-
+            
+        
+           
             // 
             // cashAdvanceToolStripMenuItem
             // 
@@ -222,7 +206,6 @@ namespace PayrollSystem
                 this.philhealthToolStripMenuItem,
                 this.taxToolStripMenuItem,
                 this.rateToolStripMenuItem,
-                this.qrToolStripMenuItem,
                 this.unitToolStripMenuItem});
             this.configurationToolStripMenuItem.Name = "configurationToolStripMenuItem";
             this.configurationToolStripMenuItem.Size = new Size(93, 20);
@@ -261,14 +244,6 @@ namespace PayrollSystem
             this.rateToolStripMenuItem.Click += RateToolStripMenuItem_Click;
 
             // 
-            // qrToolStripMenuItem
-            // 
-            this.qrToolStripMenuItem.Name = "qrToolStripMenuItem";
-            this.qrToolStripMenuItem.Size = new Size(140, 22);
-            this.qrToolStripMenuItem.Text = "QR Settings";
-            this.qrToolStripMenuItem.Click += QrToolStripMenuItem_Click;
-
-            // 
             // unitToolStripMenuItem
             // 
             this.unitToolStripMenuItem.Name = "unitToolStripMenuItem";
@@ -281,7 +256,6 @@ namespace PayrollSystem
             // 
             this.reportsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] {
                 this.payrollReportToolStripMenuItem,
-                this.dtrReportToolStripMenuItem,
                 this.cashAdvanceReportToolStripMenuItem,
                 this.payslipReportToolStripMenuItem});
             this.reportsToolStripMenuItem.Name = "reportsToolStripMenuItem";
@@ -296,13 +270,8 @@ namespace PayrollSystem
             this.payrollReportToolStripMenuItem.Text = "Payroll Report";
             this.payrollReportToolStripMenuItem.Click += PayrollReportToolStripMenuItem_Click;
 
-            // 
-            // dtrReportToolStripMenuItem
-            // 
-            this.dtrReportToolStripMenuItem.Name = "dtrReportToolStripMenuItem";
-            this.dtrReportToolStripMenuItem.Size = new Size(186, 22);
-            this.dtrReportToolStripMenuItem.Text = "DTR Report";
-            this.dtrReportToolStripMenuItem.Click += DtrReportToolStripMenuItem_Click;
+           
+            
 
             // 
             // cashAdvanceReportToolStripMenuItem
@@ -484,18 +453,11 @@ namespace PayrollSystem
             payrollListForm.ShowDialog();
         }
 
-        private void DtrManagementToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            FrmDTR frmDTRManagement = new FrmDTR();
-            frmDTRManagement.ShowDialog();
-        }
-
         private void CashAdvanceManagementToolStripMenuItem_Click(object sender, EventArgs e)
         {
             frmCashAdvance cashAdvanceForm = new frmCashAdvance();
             cashAdvanceForm.ShowDialog();
         }
-
         private void SssToolStripMenuItem_Click(object sender, EventArgs e)
         {
             frmSSS sssForm = new frmSSS();
@@ -520,11 +482,7 @@ namespace PayrollSystem
             rateForm.ShowDialog();
         }
 
-        private void QrToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            frmQr qrForm = new frmQr();
-            qrForm.ShowDialog();
-        }
+     
 
         private void UnitToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -550,11 +508,7 @@ namespace PayrollSystem
             payrollReportForm.ShowDialog();
         }
 
-        private void DtrReportToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            frmReportDTR dtrReportForm = new frmReportDTR();
-            dtrReportForm.ShowDialog();
-        }
+
 
         private void CashAdvanceReportToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -589,8 +543,6 @@ namespace PayrollSystem
         private ToolStripMenuItem payrollPeriodToolStripMenuItem;
         private ToolStripMenuItem payrollGenerationToolStripMenuItem;
         private ToolStripMenuItem payrollListToolStripMenuItem;
-        private ToolStripMenuItem dtrToolStripMenuItem;
-        private ToolStripMenuItem dtrManagementToolStripMenuItem;
         private ToolStripMenuItem cashAdvanceToolStripMenuItem;
         private ToolStripMenuItem cashAdvanceManagementToolStripMenuItem;
         private ToolStripMenuItem configurationToolStripMenuItem;
@@ -598,11 +550,9 @@ namespace PayrollSystem
         private ToolStripMenuItem philhealthToolStripMenuItem;
         private ToolStripMenuItem taxToolStripMenuItem;
         private ToolStripMenuItem rateToolStripMenuItem;
-        private ToolStripMenuItem qrToolStripMenuItem;
         private ToolStripMenuItem unitToolStripMenuItem;
         private ToolStripMenuItem reportsToolStripMenuItem;
         private ToolStripMenuItem payrollReportToolStripMenuItem;
-        private ToolStripMenuItem dtrReportToolStripMenuItem;
         private ToolStripMenuItem cashAdvanceReportToolStripMenuItem;
         private ToolStripMenuItem payslipReportToolStripMenuItem;
         private ToolStripMenuItem helpToolStripMenuItem;
