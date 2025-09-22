@@ -679,6 +679,7 @@ namespace PayrollSystem
         {
             try
             {
+                //Need DTR
                 string query = @"
                     SELECT 
                         CONCAT(e.first_name, ' ', e.last_name) as 'Employee Name',

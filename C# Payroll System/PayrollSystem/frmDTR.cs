@@ -353,6 +353,7 @@ namespace PayrollSystem
                     whereClause += " AND d.department_name = @departmentName";
                 }
                 
+                //Need DTR
                 string query = $@"SELECT 
                     dtr.dtr_id as 'DTR ID',
                     dtr.employee_id as 'Employee ID',
@@ -459,6 +460,7 @@ namespace PayrollSystem
                 }
                 
                 // Check if DTR record exists for today
+                //Need DTR
                 string checkDTRQuery = "SELECT dtr_id FROM dtr_records WHERE employee_id = @employeeId AND dtr_date = @dtrDate";
                 var dtrParams = new System.Collections.Generic.Dictionary<string, object> { ["@employeeId"] = employeeId, ["@dtrDate"] = currentDate };
                 
@@ -471,6 +473,7 @@ namespace PayrollSystem
                 if (dtrId == null)
                 {
                     // Create new DTR record
+                    //Need DTR
                     query = $"INSERT INTO dtr_records (employee_id, dtr_date, {entryType.ToLower().Replace(" ", "_")}, status) VALUES (@employeeId, @dtrDate, TIME_FORMAT(@currentTime, '%H:%i'), 'Present')";
                     parameters.Add("@employeeId", employeeId);
                     parameters.Add("@dtrDate", currentDate);
@@ -479,6 +482,7 @@ namespace PayrollSystem
                 else
                 {
                     // Update existing DTR record with total hours calculation
+                    //Need DTR
                     query = $@"UPDATE dtr_records 
                         SET {entryType.ToLower().Replace(" ", "_")} = TIME_FORMAT(@currentTime, '%H:%i'),
                             total_hours = ROUND(TIMESTAMPDIFF(MINUTE, time_in, IFNULL(time_out, @currentTime)) / 60.0 - 

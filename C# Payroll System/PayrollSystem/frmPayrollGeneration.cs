@@ -597,6 +597,7 @@ namespace PayrollSystem
 
         private decimal CalculateOvertimePay(string employeeId, decimal basicSalary)
         {
+            //Need DTR
             try
             {
                 // Get payroll settings for overtime rate
@@ -611,8 +612,9 @@ namespace PayrollSystem
                 
                 // Calculate hourly rate (monthly salary / (working days * working hours))
                 decimal hourlyRate = basicSalary / (22 * workingHoursPerDay); // Assuming 22 working days per month
-                
+
                 // Get overtime hours from DTR for the current period
+                //Need DTR
                 string dtrQuery = @"
                     SELECT COALESCE(SUM(overtime_hours), 0) as total_ot_hours
                     FROM dtr_records
