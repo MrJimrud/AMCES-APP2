@@ -361,7 +361,7 @@ namespace PayrollSystem
                 cmbDepartment.Items.Clear();
                 cmbDepartment.Items.Add(new { Text = "All Departments", Value = "" });
                 
-                string query = "SELECT department_id, department_name FROM departments WHERE status = 'Active' ORDER BY department_name";
+                string query = "SELECT department_id, department_name FROM departments WHERE is_active = 'Active' ORDER BY department_name";
                 DataTable dt = UtilityHelper.GetDataTable(query);
                 
                 foreach (DataRow row in dt.Rows)
