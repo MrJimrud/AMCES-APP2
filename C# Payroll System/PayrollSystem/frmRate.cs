@@ -565,7 +565,7 @@ namespace PayrollSystem
                 
                 foreach (DataRow row in dt.Rows)
                 {
-                    cmbDepartment.Items.Add(row["department"].ToString());
+                    cmbPosition.Items.Add(row["position"].ToString());
                 }
                 
                 cmbDepartment.SelectedIndex = 0;
@@ -809,7 +809,144 @@ namespace PayrollSystem
 
         private void BtnAddRate_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Add Salary Rate functionality would be implemented here.", "Feature", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            try
+            {
+                Form addRateForm = new Form
+                {
+                    Text = "Add New Salary Rate",
+                    Size = new Size(400, 350),
+                    StartPosition = FormStartPosition.CenterParent,
+                    FormBorderStyle = FormBorderStyle.FixedDialog,
+                    MaximizeBox = false,
+                    MinimizeBox = false
+                };
+
+                ComboBox cmbPositionAdd = new ComboBox
+                {
+                    Location = new Point(150, 20),
+                    Size = new Size(200, 23),
+                    DropDownStyle = ComboBoxStyle.DropDownList
+                };
+                // Initialize positions in the dropdown
+                cmbPositionAdd.Items.Clear();
+                cmbPositionAdd.Items.Add("All Positions");
+                
+                string query = "SELECT DISTINCT position FROM employees WHERE position IS NOT NULL ORDER BY position";
+                DataTable dt = UtilityHelper.GetDataSet(query);
+                foreach (DataRow row in dt.Rows)
+                {
+                    cmbPositionAdd.Items.Add(row["position"].ToString());
+                }
+                cmbPositionAdd.SelectedIndex = 0;
+
+                NumericUpDown nudBasicRate = new NumericUpDown
+                {
+                    Location = new Point(150, 60),
+                    Size = new Size(200, 23),
+                    DecimalPlaces = 2,
+                    Maximum = 999999.99m,
+                    Minimum = 0,
+                    Value = 0
+                };
+
+                NumericUpDown nudOvertimeRate = new NumericUpDown
+                {
+                    Location = new Point(150, 100),
+                    Size = new Size(200, 23),
+                    DecimalPlaces = 2,
+                    Maximum = 999.99m,
+                    Minimum = 0,
+                    Value = 1.25m
+                };
+
+                DateTimePicker dtpEffectiveDate = new DateTimePicker
+                {
+                    Location = new Point(150, 140),
+                    Size = new Size(200, 23),
+                    Format = DateTimePickerFormat.Short,
+                    Value = DateTime.Now
+                };
+
+                CheckBox chkActive = new CheckBox
+                {
+                    Text = "Active",
+                    Location = new Point(150, 180),
+                    Checked = true
+                };
+
+                Button btnSave = new Button
+                {
+                    Text = "Save",
+                    Location = new Point(150, 220),
+                    Size = new Size(90, 30)
+                };
+
+                Button btnCancel = new Button
+                {
+                    Text = "Cancel",
+                    Location = new Point(260, 220),
+                    Size = new Size(90, 30)
+                };
+
+                btnSave.Click += (s, ev) =>
+                {
+                    try
+                    {
+                        if (cmbPositionAdd.SelectedIndex == -1)
+                        {
+                            MessageBox.Show("Please select a position.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            return;
+                        }
+
+                        string query = @"
+                            INSERT INTO salary_rates 
+                            (position_id, basic_rate, overtime_rate, effective_date, is_active)
+                            VALUES 
+                            (@positionId, @basicRate, @overtimeRate, @effectiveDate, @isActive)";
+
+                        var parameters = new MySqlConnector.MySqlParameter[]
+                        {
+                            new MySqlConnector.MySqlParameter("@positionId", cmbPositionAdd.SelectedValue),
+                            new MySqlConnector.MySqlParameter("@basicRate", nudBasicRate.Value),
+                            new MySqlConnector.MySqlParameter("@overtimeRate", nudOvertimeRate.Value),
+                            new MySqlConnector.MySqlParameter("@effectiveDate", dtpEffectiveDate.Value),
+                            new MySqlConnector.MySqlParameter("@isActive", chkActive.Checked)
+                        };
+
+                        DatabaseManager.ExecuteNonQuery(query, parameters);
+                        MessageBox.Show("Salary rate added successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        addRateForm.Close();
+                        LoadSalaryRates();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error adding salary rate: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                };
+
+                btnCancel.Click += (s, ev) => addRateForm.Close();
+
+                addRateForm.Controls.AddRange(new Control[]
+                {
+                    new Label { Text = "Position:", Location = new Point(20, 23), Size = new Size(120, 23) },
+                    cmbPositionAdd,
+                    new Label { Text = "Basic Rate:", Location = new Point(20, 63), Size = new Size(120, 23) },
+                    nudBasicRate,
+                    new Label { Text = "Overtime Rate:", Location = new Point(20, 103), Size = new Size(120, 23) },
+                    nudOvertimeRate,
+                    new Label { Text = "Effective Date:", Location = new Point(20, 143), Size = new Size(120, 23) },
+                    dtpEffectiveDate,
+                    chkActive,
+                    btnSave,
+                    btnCancel
+                });
+
+                addRateForm.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void BtnEditRate_Click(object sender, EventArgs e)
