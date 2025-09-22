@@ -816,37 +816,23 @@ namespace PayrollSystem
         {
             try
             {
-                string searchFilter = !string.IsNullOrEmpty(txtSearchEmployee.Text) 
-                    ? $" AND (e.first_name LIKE '%{txtSearchEmployee.Text}%' OR e.last_name LIKE '%{txtSearchEmployee.Text}%')" 
-                    : "";
-
-                string departmentFilter = cmbDepartment.SelectedIndex > 0 
-                    ? $" AND e.department = '{cmbDepartment.SelectedItem}'" 
-                    : "";
-
-                string dateFilter = "";
-                if (cmbPayPeriod.SelectedIndex == 0) // Current Period
-                    dateFilter = " AND sc.contribution_date = CURRENT_DATE()";
-                else if (cmbPayPeriod.SelectedIndex == 1) // Previous Period
-                    dateFilter = " AND sc.contribution_date = DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)";
-                else if (cmbPayPeriod.SelectedIndex == 2) // Custom Range
-                    dateFilter = $" AND sc.contribution_date BETWEEN '{dtpFromDate.Value:yyyy-MM-dd}' AND '{dtpToDate.Value:yyyy-MM-dd}'";
-
-                string query = $@"
+                string query = @"
                     SELECT 
                         sc.id,
                         CONCAT(e.first_name, ' ', e.last_name) as 'Employee Name',
                         e.employee_id as 'Employee ID',
-                        e.department as 'Department',
+                        d.department_name as 'Department',
                         FORMAT(sc.salary_credit, 2) as 'Salary Credit',
-                        FORMAT(sc.employee_contribution, 2) as 'Employee Share',
-                        FORMAT(sc.employer_contribution, 2) as 'Employer Share',
+                        FORMAT(sc.employee_share, 2) as 'Employee Share',
+                        FORMAT(sc.employer_share, 2) as 'Employer Share',
                         FORMAT(sc.total_contribution, 2) as 'Total Contribution',
-                        sc.pay_period as 'Pay Period',
+                        MONTHNAME(sc.contribution_date) as 'Month',
+                        YEAR(sc.contribution_date) as 'Year',
                         sc.contribution_date as 'Date'
-                    FROM tbl_sss_contribution sc
-                    INNER JOIN tbl_employee e ON sc.employee_id = e.id
-                    WHERE 1=1 {searchFilter} {departmentFilter} {dateFilter}
+                    FROM sss_contributions sc
+                    INNER JOIN employees e ON sc.employee_id = e.employee_id
+                    INNER JOIN departments d ON e.department_id = d.department_id
+                    WHERE YEAR(sc.contribution_date) = YEAR(CURDATE())
                     ORDER BY sc.contribution_date DESC, e.last_name, e.first_name";
 
                 DataTable dt = UtilityHelper.GetDataSet(query);
