@@ -40,7 +40,6 @@ namespace PayrollSystem
             this.btnAddEmployee = new Button();
             this.btnGeneratePayroll = new Button();
             this.btnViewReports = new Button();
-            this.btnManageDTR = new Button();
             this.timerDateTime = new System.Windows.Forms.Timer();
             this.panelHeader.SuspendLayout();
             this.panelStats.SuspendLayout();
@@ -383,7 +382,7 @@ namespace PayrollSystem
             this.btnManageDTR.TabIndex = 4;
             this.btnManageDTR.Text = "Manage DTR";
             this.btnManageDTR.UseVisualStyleBackColor = false;
-            this.btnManageDTR.Click += BtnManageDTR_Click;
+            
 
             // 
             // frmDashboard
@@ -564,12 +563,7 @@ namespace PayrollSystem
             reportsForm.ShowDialog();
         }
 
-        private void BtnManageDTR_Click(object sender, EventArgs e)
-        {
-            FrmDTR dtrForm = new FrmDTR();
-            dtrForm.ShowDialog();
-            LoadDashboardData(); // Refresh data after managing DTR
-        }
+       
 
         #region Designer Variables
         private Panel panelHeader;
