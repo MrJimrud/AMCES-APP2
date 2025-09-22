@@ -370,6 +370,7 @@ namespace PayrollSystem
             try
             {
                 // Get original DTR record
+                //Need DTR
                 string getOriginalQuery = @"SELECT time_in, time_out FROM dtr 
                                            WHERE employee_id = @employee_id AND DATE(dtr_date) = @date";
                 

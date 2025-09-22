@@ -535,6 +535,7 @@ namespace PayrollSystem
             var selectedReportType = (dynamic)cmbReportType.SelectedItem;
             string reportType = selectedReportType?.Value?.ToString() ?? "Summary";
 
+            //Need DTR
             string query = @"
                 SELECT 
                     dtr.dtr_id,
