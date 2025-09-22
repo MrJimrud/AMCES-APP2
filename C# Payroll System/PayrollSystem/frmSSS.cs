@@ -818,11 +818,23 @@ namespace PayrollSystem
             {
 
                 // Build the query with filters
-
-
+                //Edited
+                string query = @"
+                    SELECT 
+                        sc.id,
+                        CONCAT(e.first_name, ' ', e.last_name) as 'Employee Name',
+                        e.employee_id as 'Employee ID',
+                        e.department as 'Department',
+                        FORMAT(sc.salary_credit, 2) as 'Salary Credit',
+                        FORMAT(sc.employee_contribution, 2) as 'Employee Share',
+                        FORMAT(sc.employer_contribution, 2) as 'Employer Share',
+                        FORMAT(sc.total_contribution, 2) as 'Total Contribution',
+                        sc.pay_period as 'Pay Period',
+                        sc.contribution_date as 'Date'
                     FROM tbl_sss_contribution sc
                     INNER JOIN tbl_employee e ON sc.employee_id = e.id
                     WHERE 1=1";
+                //Last
 
 
                 List<MySqlParameter> parameters = new List<MySqlParameter>();
