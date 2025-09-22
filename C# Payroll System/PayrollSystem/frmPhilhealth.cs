@@ -511,17 +511,19 @@ namespace PayrollSystem
                         pc.id,
                         CONCAT(e.first_name, ' ', e.last_name) as 'Employee Name',
                         e.employee_id as 'Employee ID',
-                        FORMAT(pc.basic_salary, 2) as 'Basic Salary',
-                        FORMAT(pc.employee_contribution, 2) as 'Employee Contribution',
-                        FORMAT(pc.employer_contribution, 2) as 'Employer Contribution',
+                        d.department_name as 'Department',
+                        FORMAT(pc.salary, 2) as 'Basic Salary',
+                        FORMAT(pc.employee_share, 2) as 'Employee Contribution',
+                        FORMAT(pc.employer_share, 2) as 'Employer Contribution',
                         FORMAT(pc.total_contribution, 2) as 'Total Contribution',
                         MONTHNAME(pc.contribution_date) as 'Month',
                         YEAR(pc.contribution_date) as 'Year',
                         pc.contribution_date as 'Date'
                     FROM philhealth_contributions pc
-                INNER JOIN employees e ON pc.employee_id = e.employee_id
+                    INNER JOIN employees e ON pc.employee_id = e.employee_id
+                    INNER JOIN departments d ON e.department_id = d.department_id
                     WHERE YEAR(pc.contribution_date) = YEAR(CURDATE())
-                    ORDER BY pc.contribution_date DESC";
+                    ORDER BY pc.contribution_date DESC, e.last_name, e.first_name";
 
                 DataTable dt = UtilityHelper.GetDataSet(query);
                 dgvContributions.DataSource = dt;
